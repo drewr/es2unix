@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+# -*- python -*-
+
+import sys, re
+from es2unix import idxhealth, settings, status, num_docs
+
+args = sys.argv
+
+indices = False
+try:
+    if len(args[1:]) > 0:
+        indices = args[1:]
+except IndexError:
+    pass
+
+def index_info(i, d):
+    s = d['status']
+    rep = 'x'
+    c = 'x'
+    si = 'x'
+    try:
+        rep = settings(url, i)['index.number_of_replicas']
+    except KeyError, e:
+        rep = "0.15"
+    try:
+        si = status(url, i)['index']['size_in_bytes']
+    except KeyError, e:
+        s = "red*"
+    except:
+        s = "nostatus"
+    c = num_docs(url, i)
+    print s, i, rep, c, si
+
+url = 'http://localhost:9200'
+
+for i, d in idxhealth(url).iteritems():
+    if indices:
+        for _i in indices:
+            try:
+                if re.search(_i, i):
+                    index_info(i, d)
+            except StandardError, e:
+                print i, e
+    else:
+        index_info(i, d)

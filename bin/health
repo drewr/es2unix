@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+# -*- python -*-
+
+from es2unix import get_json, timestamp
+
+url = 'http://localhost:9200/_cluster/health'
+
+def main():
+    data = get_json(url)
+    print \
+          data['cluster_name'], \
+          data['status'], \
+          data['number_of_nodes'], \
+          data['number_of_data_nodes'], \
+          data['active_primary_shards'], \
+          data['active_shards'], \
+          data['relocating_shards'], \
+          data['initializing_shards'], \
+          data['unassigned_shards'],
+    if data['timed_out']:
+        print "TIMED OUT"
+    else:
+        print
+
+print timestamp(),
+try:
+    main()
+except Exception as e:
+    print 'error: %s' % e
