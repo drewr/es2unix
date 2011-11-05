@@ -9,20 +9,29 @@ def err(s):
 def timestamp():
     return "%d %s" % (int(time.time()), time.strftime('%H:%M:%S'))
 
+def memoize(function):
+    cache = {}
+    def decorated_function(*args):
+        if args in cache:
+            return cache[args]
+        else:
+            val = function(*args)
+            cache[args] = val
+            return val
+    return decorated_function
+
 def get(url):
     req = urllib2.urlopen(url)
     encoding = req.headers['content-type'].split('charset=')[-1]
     return req.read().decode(encoding)
 
-_json_responses_ = {}
+@memoize
 def get_json(url):
-    if not _json_responses_.has_key(url):
-        try:
-            _json_responses_[url] = json.loads(get(url))
-        except StandardError, e:
-            print >> sys.stderr, url, e
-            _json_responses_[url] = {'_error': e}
-    return _json_responses_[url]
+    try:
+        return json.loads(get(url))
+    except StandardError, e:
+        print >> sys.stderr, url, e
+        return {}
 
 def ip(s):
     return re.findall('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', s)
