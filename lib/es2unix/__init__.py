@@ -36,40 +36,28 @@ def get_json(url):
 def ip(s):
     return re.findall('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', s)
 
-_state_ = None
 def state(url, idx=None, node=None):
-    global _state_
-    if not _state_:
-        _state_ = get_json('%s/_cluster/state' % url)
+    _state_ = get_json('%s/_cluster/state' % url)
     if idx:
         return _state_['routing_table']['indices'][idx]
     if node:
         return _state_['nodes'][node]
     return _state_
 
-_status_ = None
 def status(url, idx=None):
-    global _status_
-    if not _status_:
-        _status_ = get_json('%s/_status' % url)
+    _status_ = get_json('%s/_status' % url)
     if idx:
         return _status_['indices'][idx]
     return _status_
 
-_ihealth_ = None
 def idxhealth(url, idx=None):
-    global _ihealth_
-    if not _ihealth_:
-        _ihealth_ = get_json('%s/_cluster/health?level=shards' % url)['indices']
+    _ihealth_ = get_json('%s/_cluster/health?level=shards' % url)['indices']
     if idx:
         return _ihealth_[idx]
     return _ihealth_
 
-_settings_ = None
 def settings(url, idx=None):
-    global _settings_
-    if not _settings_:
-        _settings_ = get_json('%s/_settings' % url)
+    _settings_ = get_json('%s/_settings' % url)
     if idx:
         return _settings_[idx]['settings']
     return _settings_
