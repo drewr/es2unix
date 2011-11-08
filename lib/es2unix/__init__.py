@@ -104,6 +104,7 @@ def shards(url):
                             '_bytes': rep['index']['size_in_bytes'],
                             '_ip': ip(node['transport_address']),
                             '_node': node,
+                            '_nodename': node['name'],
                             '_nodeid': rep['routing']['node'],
                             '_relo': relo_info(url, rep['routing']),
                             '_status': shardhealth(url, idx, shidx)})
@@ -114,7 +115,8 @@ def shards(url):
                    '_primary': primary_p(sh),
                    '_bytes': 0,
                    '_ip': 'x.x.x.x',
-                   '_node': 'x',
+                   '_node': None,
+                   '_nodename': None,
                    '_relo': None,
                    '_status': 'x'})
         s.append(sh)
