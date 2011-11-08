@@ -17,6 +17,7 @@ for sh in shards(url):
         sh['_status'], \
         sh['_primary'], \
         sh['_bytes'], \
+        sh['_bytes_hum'], \
         sh['_ip'], \
         sh['_nodename'] or '', \
         sh['_relo'] or ''
