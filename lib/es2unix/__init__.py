@@ -34,7 +34,7 @@ def get_json(url):
         return {}
 
 def ip(s):
-    return re.findall('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', s)
+    return re.findall('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', s)[0]
 
 def state(url, idx=None, node=None):
     _state_ = get_json('%s/_cluster/state' % url)
@@ -43,6 +43,15 @@ def state(url, idx=None, node=None):
     if node:
         return _state_['nodes'][node]
     return _state_
+
+def cluster_name(url):
+    return state(url)['cluster_name']
+
+def node(url, id):
+    return get_json('%s/_cluster/nodes' % url)['nodes'][id]
+
+def master(url):
+    return node(url, state(url, 'master_node'))
 
 def status(url, idx=None):
     _status_ = get_json('%s/_status' % url)
@@ -56,6 +65,9 @@ def idxhealth(url, idx=None):
         return _ihealth_[idx]
     return _ihealth_
 
+def shardhealth(url, idx, shidx):
+    return idxhealth(url, idx)['shards'][shidx]['status']
+
 def settings(url, idx=None):
     _settings_ = get_json('%s/_settings' % url)
     if idx:
@@ -68,22 +80,44 @@ def num_docs(url, idx):
 def indices(url):
     return idxhealth(url).keys()
 
+def primary_p(sh):
+    if sh['primary']:
+        return 'p'
+    return 'r'
+
+def relo_info(url, routing):
+    _to = routing['relocating_node']
+    if _to:
+        _to = node(url, _to)
+        return '-> %s %s' % (ip(_to['transport_address']), _to['name'])
+    return None
+
 def shards(url):
     s = []
     for idx in indices(url):
         for shidx, replicas in status(url, idx)['shards'].items():
             for rep in replicas:
-                p = 'r'
-                if rep['routing']['primary']:
-                    p = 'p'
                 node = state(url, node=rep['routing']['node'])
                 rep.update({'_index': idx,
                             '_shidx': shidx,
-                            '_primary': p,
+                            '_primary': primary_p(rep['routing']),
                             '_bytes': rep['index']['size_in_bytes'],
-                            '_ip': ip(node['transport_address'])[0],
+                            '_ip': ip(node['transport_address']),
                             '_node': node,
-                            '_nodeid': rep['routing']['node']})
+                            '_nodeid': rep['routing']['node'],
+                            '_relo': relo_info(url, rep['routing']),
+                            '_status': shardhealth(url, idx, shidx)})
                 s.append(rep)
+    for sh in state(url)['routing_nodes']['unassigned']:
+        sh.update({'_index': sh['index'],
+                   '_shidx': sh['shard'],
+                   '_primary': primary_p(sh),
+                   '_bytes': rep['index']['size_in_bytes'],
+                   '_ip': 'x.x.x.x',
+                   '_node': node,
+                   '_nodeid': node,
+                   '_relo': None,
+                   '_status': '_'})
+        s.append(sh)
     return s
 

@@ -13,8 +13,11 @@ for sh in shards(url):
     print \
         sh['_index'], \
         sh['_shidx'], \
+        sh['state'], \
+        sh['_status'], \
         sh['_primary'], \
         sh['_bytes'], \
         sh['_ip'], \
-        sh['_node']['name']
+        sh['_node']['name'], \
+        sh['_relo'] or ''
 
