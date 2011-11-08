@@ -112,12 +112,11 @@ def shards(url):
         sh.update({'_index': sh['index'],
                    '_shidx': sh['shard'],
                    '_primary': primary_p(sh),
-                   '_bytes': rep['index']['size_in_bytes'],
+                   '_bytes': 0,
                    '_ip': 'x.x.x.x',
-                   '_node': node,
-                   '_nodeid': node,
+                   '_node': 'x',
                    '_relo': None,
-                   '_status': '_'})
+                   '_status': 'x'})
         s.append(sh)
     return s
 
